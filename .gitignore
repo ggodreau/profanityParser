@@ -3,3 +3,4 @@ foo.txt
 apikey.json
 course_dump
 *.csv
+*.tsv
