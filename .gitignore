@@ -4,3 +4,4 @@ apikey.json
 course_dump
 *.csv
 *.tsv
+__pycache__
