@@ -110,12 +110,12 @@ class Zerofucks:
                         # otherwise, we'll erase shit in it
                         else:
                             print(f'deleting shit in {self.__get_path(root, dirs, name)}')
-                            self.erase_in_file(root+'/'+name, postfix, bad_words)
+                            self.erase_in_file(root+'/'+name, postfix=postfix, bad_words=bad_words)
                             audit_log['processed'].append(self.__get_path(root, dirs, name))
                     # if the filename has no extension, we still process it
                     except:
                         print(f'no file extension in {self.__get_path(root, dirs, name)}, erasing shit anyway')
-                        self.erase_in_file(root+'/'+name, postfix, bad_words)
+                        self.erase_in_file(root+'/'+name, postfix=postfix, bad_words=bad_words)
                         audit_log['processed'].append(self.__get_path(root, dirs, name))
         return audit_log
 
