@@ -1,4 +1,5 @@
 a55
+amphetamine
 anal
 anus
 ar5e
@@ -302,6 +303,8 @@ mutherfucker
 n1gga
 n1gger
 nazi
+narcotic
+narcotics
 nigg3r
 nigg4h
 nigga
@@ -351,6 +354,9 @@ pornography
 pornos
 prick
 pron
+prostitute
+prostitution
+prostitutes
 pube
 pusse
 pussi
@@ -474,6 +480,7 @@ hallucinogen
 oxycontin
 stimulant
 meth
+methadone
 drug
 drugs
 kiss

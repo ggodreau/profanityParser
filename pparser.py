@@ -4,6 +4,18 @@ import pandas as pd
 from tqdm import tqdm
 
 class Zerofucks:
+    '''Class container for profanity parser utility
+
+    # instantiate class
+    myFinder = Zerofucks()
+    
+    # load in bad words list from file,
+    # write to list my_badwords
+    my_badwords = []
+    badwords_file = open('./bad_words.txt', "r").readlines()
+    for line in badwords_file:
+        my_badwords.append(line.rstrip())
+    '''
     
     def __init__(self):
         self.df = pd.DataFrame(
@@ -40,7 +52,7 @@ class Zerofucks:
         except:
             print("Unable to write csv, did you run .find_shit() yet?")
             
-    def erase_shit(self, input_file, postfix='', bad_words=['fuck', 'shit']):
+    def erase_in_file(self, input_file, replace_with='',  postfix='', bad_words=['fuck', 'shit']):
         '''
         Erases any bad words from the user specified files.
         
@@ -48,25 +60,23 @@ class Zerofucks:
         ALSO returns a dictionary for forensic - what did you change - purposes
         
         input_file: full path to the file you want to process / remove bad words from
+        replace_with: the string you'll be replacing the bad word with (defaults to nothing, '')
         postfix: optional string value you want to add to the end of the outputfile. If blank, it'll overwrite the input file.
         '''
         
         print('Replacing bad words in {}...'.format(input_file))
         try:
-            #infile = open(input_file, mode='r').readlines()
             tempfile = open(input_file + '.tmp', mode='w')
             with open(input_file, 'r', encoding='iso-8859-15') as infile:
-#                 outfile = open(output_file, mode='w')
                 shit_dict = {}
                 for content in tqdm(infile):
                     if len(re.findall(self.__makeRegex__(bad_words), content)) > 0:
-        #                 print('Replacing {}...'.format(re.findall(self.__makeRegex__(bad_words), content)[0]))
                         if re.findall(self.__makeRegex__(bad_words), content)[0] in shit_dict:
                             shit_dict[re.findall(self.__makeRegex__(bad_words), content)[0]] += 1
                         else:
                             shit_dict[re.findall(self.__makeRegex__(bad_words), content)[0]] = 1
                     # the '' in this line is what to replace the bad words with. In this case, nothing at all.
-                    tempfile.write(re.sub(self.__makeRegex__(bad_words), '', content))
+                    tempfile.write(re.sub(self.__makeRegex__(bad_words), replace_with, content))
             # write the tempfile contents to the original file  
             print('overwriting {} with {}'.format(input_file+'.tmp', input_file+postfix))
             os.rename(input_file + '.tmp', input_file+postfix)
@@ -74,16 +84,41 @@ class Zerofucks:
         except ValueError:
             print(f'Unable to replace bad words in {input_file}.')
             
-    def erase_shit_test(self, root_paths, postfix='', bad_words=['fuck', 'shit']):
+    def erase_in_dirs(self, root_paths, postfix='', bad_words=['fuck', 'shit'], ignore_extensions=['ipynb']):
         '''
         root_paths: LIST of directories to replace shit in. Must be a list. Cannot be a specific file.
         postfix: string to add to the end of the name of the output file. If input is 'myFile.csv' with a postfix of '_new', the scrubbed file would be 'myFile.csv_new'. No prefix overwrites the existing file.
         bad_words: optional list of words to replace in the files within root_paths
         '''
+    
+        audit_log = {
+            'ignored': [],
+            'processed': []
+        }
+
         for root_path in root_paths:
             for (root, dirs, files) in os.walk(root_path):
-                 for name in files:
-                    self.erase_shit(root+'/'+name, postfix, bad_words)
+                for name in files:
+                    try:
+                        # if the file extension is one we want to ignore
+                        file_ext = name.split('.')[-1]
+                        if file_ext in ignore_extensions:
+                            print(f'ignoring {self.__get_path(root, dirs, name)}')
+                            # add the filename to the ignored section of the audit_log
+                            audit_log['ignored'].append(self.__get_path(root, dirs, name))
+                            continue
+                        # otherwise, we'll erase shit in it
+                        else:
+                            print(f'deleting shit in {self.__get_path(root, dirs, name)}')
+                            self.erase_in_file(root+'/'+name, postfix, bad_words)
+                            audit_log['processed'].append(self.__get_path(root, dirs, name))
+                    # if the filename has no extension, we still process it
+                    except:
+                        print(f'no file extension in {self.__get_path(root, dirs, name)}, erasing shit anyway')
+                        self.erase_in_file(root+'/'+name, postfix, bad_words)
+                        audit_log['processed'].append(self.__get_path(root, dirs, name))
+        return audit_log
+
     
     def find_shit(self, root='./', bad_words=['fuck', 'shit'], include_content=True):
         '''
@@ -147,3 +182,22 @@ class Zerofucks:
         print("Dataframe successfully created, \n \
             use <obj>.df to print the df, or \n \
             .write_df() method to write to file.")
+
+
+    def __get_path(self, root, dirs, name):
+        '''
+        returns the full path as a string
+        '''
+        dir_string = ''
+        num_dirs = len(dirs)
+    
+        if num_dirs == 0:
+            return(root+'/'+name)
+        else:
+            for idx, dir in enumerate(dirs):
+                if idx < num_dirs:
+                    dir_string += dir + '/'
+                else:
+                    dir_string += dir
+            return(root+dir_string+name)
+
